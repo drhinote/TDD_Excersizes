@@ -1,6 +1,8 @@
 package com.quintrix.banking.tdd;
 
 import java.util.Date;
+
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import graphql.com.google.common.collect.Sets;
 @SpringBootTest
 public class BusinessLogicTestDrivenDevelopment {
 	
+	private static final String TEST_LOCATION = "test location";
 	@Autowired
 	CompanyRepository companyDb;
 	@Autowired
@@ -27,20 +30,23 @@ public class BusinessLogicTestDrivenDevelopment {
 	TransactionsRepository transactionsDb;
 	
 	@Test
+	@Order(1)
 	public void canAddBranch() {
 		Branch testBranch = new Branch();
 		testBranch.accounts = Sets.newHashSet();
-		testBranch.location = "test location";
+		testBranch.location = TEST_LOCATION;
 		assert(companyDb.addBranch(testBranch) != null);
 	}
 
 	@Test
+	@Order(2)
 	public void canQueryBranches() {
-		Branch testBranch = companyDb.findBranchByLocation("test location");
+		Branch testBranch = companyDb.findBranchByLocation(TEST_LOCATION);
 		assert(testBranch != null);
 	}
 	
 	@Test
+	@Order(3)
 	public void canAddAccount() {
 		Account testAccount = makeAccount("General Zod");
 		//  ** The following line may clash with the auto ID generation found in DataModel.java
@@ -49,6 +55,7 @@ public class BusinessLogicTestDrivenDevelopment {
 	}
 	
 	@Test
+	@Order(4)
 	public void canFindAccountById() {
 		//  ** If auto ID generation created an issue with specifying an ID then this test will need to first locate a valid account ID before performing this search
 		Account testAccount = accountsDb.findAccountById(1);
@@ -56,12 +63,14 @@ public class BusinessLogicTestDrivenDevelopment {
 	}
 	
 	@Test
+	@Order(5)
 	public void canFindAccountByName() {
 		Account testAccount = accountsDb.findAccountByOwnerName("Zod, General");
 		assert(testAccount != null);
 	}
 	
 	@Test
+	@Order(6)
 	public void canUpdateAccountInfo() {
 		Account testAccount = accountsDb.findAccountByOwnerName("General Zod");
 		testAccount.ownerName = "Batman";
@@ -71,6 +80,7 @@ public class BusinessLogicTestDrivenDevelopment {
 	}
 	
 	@Test
+	@Order(7)
 	public void canCloseAccount() {
 		Account testAccount = accountsDb.findAccountByOwnerName("Batman");
 		accountsDb.closeAccount(testAccount);
@@ -79,6 +89,7 @@ public class BusinessLogicTestDrivenDevelopment {
 	}
 	
 	@Test
+	@Order(8)
 	public void canStoreTwoNewAccounts() {
 		Account newAccount1 = makeAccount("Thing 1");
 		Account newAccount2 = makeAccount("Thing 2");
@@ -89,6 +100,7 @@ public class BusinessLogicTestDrivenDevelopment {
 	}
 	
 	@Test
+	@Order(9)
 	public void canCreateValidTransaction() {
 		Account sourceAccount = accountsDb.findAccountByOwnerName("Thing 1");
 		Account destAccount = accountsDb.findAccountByOwnerName("Thing 2");
@@ -102,6 +114,7 @@ public class BusinessLogicTestDrivenDevelopment {
 	}
 	
 	@Test
+	@Order(10)
 	public void cannotCreateInvalidTransaction() {
 		Account sourceAccount = accountsDb.findAccountByOwnerName("Thing 2");
 		Account destAccount = accountsDb.findAccountByOwnerName("Thing 1");
@@ -115,11 +128,13 @@ public class BusinessLogicTestDrivenDevelopment {
 	}
 	
 	@Test
+	@Order(11)
 	public void canBatchProcessTransactions() {
 		transactionsDb.startBatchProcessing();
 	}
 	
 	@Test
+	@Order(12)
 	public void batchProcessIsAccurate() {
 		Account testAccount1 = accountsDb.findAccountByOwnerName("Thing 1");
 		Account testAccount2 = accountsDb.findAccountByOwnerName("Thing 2");
@@ -129,9 +144,7 @@ public class BusinessLogicTestDrivenDevelopment {
 	private Account makeAccount(String owner) {
 		Account testAccount = new Account();
 		testAccount.currentBalance = 0.0;
-		testAccount.homeBranch = companyDb.findBranchByLocation("test location");
 		testAccount.opened = new Date();
-		testAccount.transactions = Sets.newHashSet();
 		testAccount.ownerName = owner;
 		return testAccount;
 	}
